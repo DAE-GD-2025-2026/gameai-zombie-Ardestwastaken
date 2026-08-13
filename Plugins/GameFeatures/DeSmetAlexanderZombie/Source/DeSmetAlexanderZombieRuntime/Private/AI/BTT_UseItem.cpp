@@ -43,16 +43,25 @@ EBTNodeResult::Type UBTT_UseItem::ExecuteTask(
 		}
 	}
 
-	if (bNeedHealth && bNeedStamina)
+	// Try primary need first
+	for (int32 i = 0; i < Items.Num(); ++i)
 	{
-		for (int32 i = 0; i < Items.Num(); ++i)
+		ABaseItem* Item = Items[i];
+		if (Item && Item->GetItemType() == WantedFirst && Item->GetValue() > 0)
 		{
-			ABaseItem* Item = Items[i];
-			if (Item && Item->GetItemType() == WantedSecond && Item->GetValue() > 0)
-			{
-				Inv->UseItem(i);
-				return EBTNodeResult::Succeeded;
-			}
+			Inv->UseItem(i);
+			return EBTNodeResult::Succeeded;
+		}
+	}
+
+	// Always try secondary as fallback, not just when both flags are set
+	for (int32 i = 0; i < Items.Num(); ++i)
+	{
+		ABaseItem* Item = Items[i];
+		if (Item && Item->GetItemType() == WantedSecond && Item->GetValue() > 0)
+		{
+			Inv->UseItem(i);
+			return EBTNodeResult::Succeeded;
 		}
 	}
 

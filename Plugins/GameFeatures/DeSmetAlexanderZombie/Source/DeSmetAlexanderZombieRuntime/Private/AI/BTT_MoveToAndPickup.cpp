@@ -78,6 +78,7 @@ int32 UBTT_MoveToAndPickup::FindWorstSlot(UInventoryComponent* Inv, ASurvivorPaw
 	for (int32 i = 0; i < Items.Num(); ++i)
 	{
 		const float Score = ScoreItem(Items[i], Survivor);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Item Score: %f"), Score));
 		if (Score < WorstScore) { WorstScore = Score; WorstSlot = i; }
 	}
 	return WorstSlot;
@@ -94,7 +95,10 @@ void UBTT_MoveToAndPickup::AttemptPickup(ASurvivorPawn* Survivor, ABaseItem* Ite
 	{
 		const int32 WorstSlot  = FindWorstSlot(Inv, Survivor);
 		const float WorstScore = ScoreItem(Inv->GetInventory()[WorstSlot], Survivor);
-		if (ScoreItem(Item, Survivor) <= WorstScore) return;
+		if (ScoreItem(Item, Survivor) <= WorstScore) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Item Not Worthy")));
+			return;
+		}
 		Inv->RemoveItem(WorstSlot);
 		Slot = WorstSlot;
 	}
