@@ -6,6 +6,8 @@
 #include "NavigationSystem.h"
 #include "Survivor/SurvivorPawn.h"
 #include "Common/StaminaComponent.h"
+#include "Common/InventoryComponent.h"
+#include "Common/InventoryComponent.h"
 
 struct FFleeFromZombieMemory
 {
@@ -54,13 +56,28 @@ EBTNodeResult::Type UBTT_FleeFromZombie::ExecuteTask(
 		}
 	}
 
+	// Insert right before the sprint decision in ExecuteTask:
 	UStaminaComponent* Stamina = Survivor->FindComponentByClass<UStaminaComponent>();
+	UInventoryComponent* Inv = Survivor->FindComponentByClass<UInventoryComponent>();
+
+	const bool bStaminaEmpty = Stamina && (Stamina->GetCurrentStamina() <= 0.f);
+	if (bStaminaEmpty && Inv)
+	{
+		const TArray<ABaseItem*>& Items = Inv->GetInventory();
+		for (int32 i = 0; i < Items.Num(); ++i)
+		{
+			if (Items[i] && Items[i]->GetItemType() == EItemType::Food && Items[i]->GetValue() > 0)
+			{
+				Inv->UseItem(i);
+				break;
+			}
+		}
+	}
+
 	const bool bHasStaminaToSprint = Stamina
 		? (Stamina->GetCurrentStamina() / Stamina->GetMaxStamina()) > 0.30f
 		: false;
-
-	if (bHasStaminaToSprint)
-		Survivor->StartRunning();
+	if (bHasStaminaToSprint) Survivor->StartRunning();
 
 	FAIMoveRequest MoveReq;
 	MoveReq.SetGoalLocation(FleeTarget);

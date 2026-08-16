@@ -35,18 +35,14 @@ EBTNodeResult::Type UBTT_ShootAtZombie::ExecuteTask(
 
 	const TArray<ABaseItem*>& Items = Inv->GetInventory();
 
-	int32 PistolSlot = -1;
-	int32 ShotgunSlot = -1;
-
+	int32 PistolSlot = -1, ShotgunSlot = -1;
 	for (int32 i = 0; i < Items.Num(); ++i)
 	{
 		if (!Items[i] || Items[i]->GetValue() <= 0) continue;
-
-		if (Items[i]->GetItemType() == EItemType::Pistol  && PistolSlot  < 0) PistolSlot  = i;
+		if (Items[i]->GetItemType() == EItemType::Pistol && PistolSlot < 0) PistolSlot = i;
 		if (Items[i]->GetItemType() == EItemType::Shotgun && ShotgunSlot < 0) ShotgunSlot = i;
 	}
-
-	const int32 SlotToUse = (PistolSlot >= 0) ? PistolSlot : ShotgunSlot;
+	const int32 SlotToUse = (ShotgunSlot >= 0) ? ShotgunSlot : PistolSlot; // shotgun preferred
 	if (SlotToUse < 0) return EBTNodeResult::Failed;
 
 	Inv->UseItem(SlotToUse);

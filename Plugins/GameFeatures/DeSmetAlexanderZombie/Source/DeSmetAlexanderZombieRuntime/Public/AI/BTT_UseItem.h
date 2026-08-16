@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "Items/ItemType.h"
 #include "BTT_UseItem.generated.h"
 
 UCLASS()
@@ -21,4 +22,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector IsLowStaminaKey;
+
+	UPROPERTY(EditAnywhere, Category = "Item") EItemType DesiredType { EItemType::Medkit };
 };

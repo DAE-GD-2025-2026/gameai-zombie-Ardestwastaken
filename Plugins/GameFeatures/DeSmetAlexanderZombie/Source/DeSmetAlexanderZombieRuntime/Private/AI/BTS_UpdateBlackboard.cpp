@@ -19,38 +19,22 @@ UBTS_UpdateBlackboard::UBTS_UpdateBlackboard()
 	RandomDeviation = 0.0f;
 }
 
-void UBTS_UpdateBlackboard::TickNode(UBehaviorTreeComponent& OwnerComp,
-	uint8* NodeMemory, float DeltaSeconds)
+void UBTS_UpdateBlackboard::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	AAIController* Controller = OwnerComp.GetAIOwner();
-	if (!Controller) return;
-
-	ASurvivorPawn* Survivor = Cast<ASurvivorPawn>(Controller->GetPawn());
-	if (!Survivor) return;
-
+	ASurvivorPawn* Survivor = Controller ? Cast<ASurvivorPawn>(Controller->GetPawn()) : nullptr;
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	if (!BB) return;
+	if (!Survivor || !BB) return;
 
-	UStudentPerceptor* Perceptor = Survivor->FindComponentByClass<UStudentPerceptor>();
-	if (!Perceptor) return;
-
-	BB->SetValueAsObject(ZombieActorKey.SelectedKeyName, Perceptor->GetNearestVisibleZombie());
-
-	BB->SetValueAsObject(ItemActorKey.SelectedKeyName, Perceptor->GetNearestVisibleItem());
-
-	BB->SetValueAsObject(HouseActorKey.SelectedKeyName, Perceptor->GetNearestVisibleHouse());
+	if (UStudentPerceptor* Perceptor = Survivor->FindComponentByClass<UStudentPerceptor>())
+	{
+		BB->SetValueAsObject(ZombieActorKey.SelectedKeyName, Perceptor->GetNearestVisibleZombie());
+	}
 
 	if (UHealthComponent* Health = Survivor->FindComponentByClass<UHealthComponent>())
 	{
-		const float Pct = static_cast<float>(Health->GetHealth()) /
-			static_cast<float>(Health->GetMaxHealth());
+		const float Pct = (float)Health->GetHealth() / (float)Health->GetMaxHealth();
 		BB->SetValueAsBool(IsLowHealthKey.SelectedKeyName, Pct < LowHealthPercent);
-	}
-
-	if (UStaminaComponent* Stamina = Survivor->FindComponentByClass<UStaminaComponent>())
-	{
-		const float Pct = Stamina->GetCurrentStamina() / Stamina->GetMaxStamina();
-		BB->SetValueAsBool(IsLowStaminaKey.SelectedKeyName, Pct < LowStaminaPercent);
 	}
 
 	bool bHasGun = false;
@@ -58,11 +42,10 @@ void UBTS_UpdateBlackboard::TickNode(UBehaviorTreeComponent& OwnerComp,
 	{
 		for (ABaseItem* Item : Inv->GetInventory())
 		{
-			if (Item && Item->GetValue() > 0 &&
-				(Item->GetItemType() == EItemType::Pistol ||
-					Item->GetItemType() == EItemType::Shotgun))
+			if (Item && (Item->GetItemType() == EItemType::Pistol || Item->GetItemType() == EItemType::Shotgun))
 			{
-				bHasGun = true; break;
+				bHasGun = true;
+				break;
 			}
 		}
 	}
